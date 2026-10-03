@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Local data and runtime output
+data/raw/**
+data/processed/**
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+logs/**
+!logs/.gitkeep
+
+# Airflow local state
+airflow.db
+airflow.cfg
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
