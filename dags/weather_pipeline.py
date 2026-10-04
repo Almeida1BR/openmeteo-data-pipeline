@@ -1,12 +1,13 @@
 from datetime import timedelta
 
 import pendulum
-from airflow.decorators import DAG
+from airflow.sdk import DAG
 
 from airflow.providers.standard.operators.python import PythonOperator
 
 from openmeteo_pipeline.ingestion.pipeline import ingest_weather
 from openmeteo_pipeline.streaming.producer import (create_producer, publish_weather_records)
+
 
 def collected_and_publish_weather() -> None:
     latitude = -19.4658
