@@ -6,6 +6,7 @@ from confluent_kafka import Consumer, Message
 
 from openmeteo_pipeline.storage.repository import save_weather_record
 from openmeteo_pipeline.streaming.producer import TOPIC_NAME
+from openmeteo_pipeline.storage.database import create_tables
 
 BOOTSTRAP_SERVERS = os.getenv(
     "KAFKA_BOOTSTRAP_SERVERS",
@@ -94,6 +95,7 @@ def consume_weather_records(consumer: Consumer) -> None:
 
 
 def main() -> None:
+    create_tables()
     consumer = create_consumer()
     consume_weather_records(consumer)
 
