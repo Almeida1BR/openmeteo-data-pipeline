@@ -76,6 +76,43 @@ services:
       retries: 5
       start_period: 10s
 
+  kafka-topic-init:
+    build:
+      context: .
+      dockerfile: docker/consumer/Dockerfile
+    image: openmeteo-consumer:latest
+    container_name: openmeteo-kafka-topic-init
+    entrypoint: ["python", "/app/scripts/create_topics.py"]
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    volumes:
+      - ./scripts:/app/scripts:ro
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: "no"
+
+  weather-consumer:
+    build:
+      context: .
+      dockerfile: docker/consumer/Dockerfile
+    image: openmeteo-consumer:latest
+    container_name: openmeteo-weather-consumer
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      KAFKA_CONSUMER_GROUP_ID: openmeteo-postgres-sink
+      DATABASE_URL: "postgresql+psycopg://airflow:${AIRFLOW_DB_PASSWORD:-airflow}@postgres:5432/airflow"
+    volumes:
+      - ./src:/app/src:ro
+    depends_on:
+      kafka:
+        condition: service_healthy
+      kafka-topic-init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
   airflow-init:
     <<: *airflow-common
     container_name: openmeteo-airflow-init
@@ -135,6 +172,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      kafka-topic-init:
+        condition: service_completed_successfully
       airflow-init:
         condition: service_completed_successfully
 
