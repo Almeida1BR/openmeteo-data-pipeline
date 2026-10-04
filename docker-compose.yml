@@ -1,7 +1,10 @@
 name: openmeteo-data-pipeline
 
 x-airflow-common: &airflow-common
-  image: apache/airflow:latest
+  image: openmeteo-airflow:latest
+  build:
+    context: .
+    dockerfile: docker/airflow/Dockerfile
   environment: &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW_DB_PASSWORD: "${AIRFLOW_DB_PASSWORD:-airflow}"
@@ -11,6 +14,7 @@ x-airflow-common: &airflow-common
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
     AIRFLOW__API__AUTH_BACKENDS: airflow.api.auth.backend.session
     KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    PYTHONPATH: /opt/airflow/src:/opt/airflow/dags:/opt/airflow
     AIRFLOW_UID: "${AIRFLOW_UID:-50000}"
   user: "${AIRFLOW_UID:-50000}:0"
   volumes:
