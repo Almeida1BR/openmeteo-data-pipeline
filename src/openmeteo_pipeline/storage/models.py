@@ -20,7 +20,7 @@ class WeatherForecast(Base):
     latitude: Mapped[float] = mapped_column(Float, nullable=False)
     longitude: Mapped[float] = mapped_column(Float, nullable=False)
     forecast_time: Mapped[datetime] = mapped_column(
-        DateTime,
+        DateTime(timezone=True),
         nullable=False
     )
     collected_at: Mapped[datetime] = mapped_column(
@@ -33,5 +33,4 @@ class WeatherForecast(Base):
     precipitation: Mapped[float | None] = mapped_column(Float)
     weather_code: Mapped[int | None] = mapped_column(Integer)
     wind_speed_10m: Mapped[float | None] = mapped_column(Float)
-
 
