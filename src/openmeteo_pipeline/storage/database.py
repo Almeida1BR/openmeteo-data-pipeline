@@ -3,6 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import DeclarativeBase
 
+
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
     "postgresql+psycopg://airflow:airflow@localhost:5432/airflow",
@@ -20,3 +21,10 @@ SessionLocal = sessionmaker(
 
 class Base(DeclarativeBase):
     pass
+
+def create_tables() -> None:
+    from openmeteo_pipeline.storage.models import WeatherForecast
+
+    Base.metadata.create_all(bind=engine,
+    tables=[WeatherForecast.__table__])
+
