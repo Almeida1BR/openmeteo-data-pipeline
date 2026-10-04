@@ -14,6 +14,7 @@ x-airflow-common: &airflow-common
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
     AIRFLOW__API__AUTH_BACKENDS: airflow.api.auth.backend.session
     KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    DATABASE_URL: "postgresql+psycopg://airflow:${AIRFLOW_DB_PASSWORD:-airflow}@postgres:5432/airflow"
     PYTHONPATH: /opt/airflow/src:/opt/airflow/dags:/opt/airflow
     AIRFLOW_UID: "${AIRFLOW_UID:-50000}"
   user: "${AIRFLOW_UID:-50000}:0"
