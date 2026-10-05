@@ -2,7 +2,7 @@
 
 Projeto guiado de engenharia de dados para coletar dados meteorológicos horários da [Open-Meteo](https://open-meteo.com/), publicá-los em um fluxo Kafka, orquestrar as etapas com Apache Airflow, armazenar o histórico e apresentá-lo em um dashboard próprio.
 
-> **Status:** estrutura inicial em desenvolvimento. As etapas e componentes serão implementados gradualmente como parte do aprendizado de Python e engenharia de dados.
+> **Status:** pipeline de ingestão, Kafka, persistência em PostgreSQL e agendamento no Airflow estão implementados. A primeira versão do dashboard Streamlit está em construção e ainda precisa de validação integrada.
 
 ## Objetivos de aprendizagem
 
@@ -14,16 +14,17 @@ Projeto guiado de engenharia de dados para coletar dados meteorológicos horári
 - Construir um dashboard interativo para explorar temperatura e histórico.
 - Executar os serviços locais com Docker Compose.
 
-## Arquitetura planejada
+## Arquitetura atual
 
 ```text
-Open-Meteo API -> Python extractor -> Kafka -> consumer / storage -> dashboard
-                                      ^
-                                      |
-                           Airflow agenda a coleta
+Airflow (a cada hora)
+    -> extrator Python -> Open-Meteo Forecast API
+    -> produtor Kafka -> tópico weather.forecast.hourly
+    -> consumidor Kafka -> PostgreSQL
+                              -> dashboard Streamlit
 ```
 
-Os componentes serão introduzidos por fases. A frequência planejada de coleta é horária. O horário da consulta será registrado separadamente do horário ao qual cada dado retornado se refere, pois previsão e atualização do modelo não significam necessariamente uma observação nova no instante da execução.
+O DAG `openmeteo_weather_hourly` agenda a coleta no início de cada hora, no fuso `America/Sao_Paulo`. Cada registro mantém o horário da previsão separado do horário da coleta. A API fornece previsões, não observações meteorológicas medidas no instante da execução. Consulte [docs/architecture.md](docs/architecture.md) para os limites e responsabilidades de cada componente.
 
 ## Tecnologias planejadas
 
@@ -52,7 +53,7 @@ Ative o ambiente virtual na raiz do repositório:
 source .venv/bin/activate
 ```
 
-As dependências locais do pipeline e do dashboard serão registradas em `requirements.txt`. As dependências específicas do Airflow ficam isoladas na imagem/container do Airflow.
+As dependências locais do pipeline e do dashboard estão registradas em `requirements.txt`. As dependências específicas do Airflow ficam isoladas na imagem/container do Airflow.
 
 ## Execução com Docker Compose
 
@@ -71,6 +72,14 @@ Interfaces locais:
 - pgAdmin: http://localhost:5050
 - Portainer: https://localhost:9443 (ou http://localhost:9000)
 
+Para reconstruir e iniciar o dashboard após alterações na imagem:
+
+```bash
+docker compose up -d --build dashboard
+```
+
+O dashboard consulta a coleta mais recente salva no PostgreSQL. A interface inicial exibe uma tabela, indicadores e um gráfico de temperatura; essa versão ainda está em desenvolvimento e não foi validada de ponta a ponta.
+
 Este ambiente é destinado a desenvolvimento local. As credenciais padrão devem ser trocadas no `.env` antes do primeiro uso; não publique esse arquivo. PostgreSQL usa a versão estável mais recente explicitamente fixada no Compose; as demais imagens estão configuradas com a tag `latest` e podem mudar quando forem atualizadas pelos mantenedores.
 
 ## Estrutura do repositório
@@ -81,7 +90,7 @@ src/dashboard/           Aplicação Streamlit
 dags/                    DAGs do Airflow
 docker/                  Arquivos de imagem e notas dos serviços
 config/                  Configurações não secretas
-docs/                    Arquitetura, dicionário de dados e registro de aprendizagem
+docs/                    Arquitetura, dicionário de dados, API e registro de aprendizagem
 tests/                   Testes unitários e de integração
 data/                    Espaço local para dados brutos e processados (ignorado pelo Git)
 ```
