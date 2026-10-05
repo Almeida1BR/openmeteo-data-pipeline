@@ -81,9 +81,9 @@ def consume_weather_records(consumer: Consumer) -> None:
             )
             if committed_offsets is not None:
                 commit_errors = [
-                    str(partition.err)
+                    str(partition.error)
                     for partition in committed_offsets
-                    if partition.err is not None
+                    if partition.error is not None
                 ]
                 if commit_errors:
                     raise RuntimeError(
