@@ -3,9 +3,11 @@ from typing import Any
 from zoneinfo import ZoneInfo
 
 from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy import select
 
 from openmeteo_pipeline.storage.database import SessionLocal
 from openmeteo_pipeline.storage.models import WeatherForecast
+
 
 FORECAST_TIMEZONE = ZoneInfo("America/Sao_Paulo")
 
@@ -36,3 +38,38 @@ def save_weather_record(record: dict[str, Any]) -> None:
 
     with SessionLocal.begin() as session:
         session.execute(statement)
+
+def get_latest_weather_forecast() -> list[dict[str, Any]]:
+    latest_collection = (
+
+select(WeatherForecast.collected_at)
+.order_by(WeatherForecast.collected_at.desc())
+.limit(1)
+.scalar_subquery()
+    )
+
+    statement = (
+        select(WeatherForecast)
+        .where(WeatherForecast.collected_at == latest_collection)
+        .order_by(WeatherForecast.forecast_time)
+    )
+
+    with SessionLocal() as session:
+        records = session.scalars(statement).all()
+        return[
+            {
+                "forecast_time": record.forecast_time,
+                "collected_at": record.collected_at,
+                "latitude": record.latitude,
+                "longitude":record.longitude,
+                "temperature_2m": record.temperature_2m,
+                "precipitation_probability": record.precipitation_probability,
+                "precipitation": record.precipitation,
+                "weather_code": record.weather_code,
+                "wind_speed_10m": record.wind_speed_10m
+            }
+            
+            for record in records
+
+        ]
+
