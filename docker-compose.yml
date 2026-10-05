@@ -12,11 +12,13 @@ x-airflow-common: &airflow-common
     AIRFLOW__CORE__FERNET_KEY: "${AIRFLOW_FERNET_KEY:-}"
     AIRFLOW__CORE__LOAD_EXAMPLES: "false"
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
-    AIRFLOW__API__AUTH_BACKENDS: airflow.api.auth.backend.session
+    AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
+    AIRFLOW__FAB__AUTH_BACKENDS: airflow.providers.fab.auth_manager.api.auth.backend.session
     KAFKA_BOOTSTRAP_SERVERS: kafka:29092
     DATABASE_URL: "postgresql+psycopg://airflow:${AIRFLOW_DB_PASSWORD:-airflow}@postgres:5432/airflow"
-    PYTHONPATH: /opt/airflow/src:/opt/airflow/dags:/opt/airflow
+    PYTHONPATH: /home/airflow/.local/lib/python3.13/site-packages:/opt/airflow/src:/opt/airflow/dags:/opt/airflow
     AIRFLOW_UID: "${AIRFLOW_UID:-50000}"
+    USER: airflow
   user: "${AIRFLOW_UID:-50000}:0"
   volumes:
     - ./dags:/opt/airflow/dags
