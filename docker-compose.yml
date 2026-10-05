@@ -208,7 +208,7 @@ services:
       - "127.0.0.1:8501:8501"
     environment:
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-      DATABASE_URL: postgresql://airflow:${AIRFLOW_DB_PASSWORD:-airflow}@postgres:5432/airflow
+      DATABASE_URL: postgresql+psycopg://airflow:${AIRFLOW_DB_PASSWORD:-airflow}@postgres:5432/airflow
     volumes:
       - ./src:/app/src:ro
     depends_on:
